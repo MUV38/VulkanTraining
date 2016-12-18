@@ -1,4 +1,7 @@
 #include <windows.h>
+#include "SimpleVulkan.h"
+
+SimpleVulkan g_simpleVulkan;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -37,6 +40,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
 		return 0;
 	}
 
+	// Vulkan初期化
+	g_simpleVulkan.Init();
+
 	ShowWindow(hwnd, nCmdShow);
 
 	// メッセージ ループを実行する
@@ -47,6 +53,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	// Vulkan後始末
+	g_simpleVulkan.Cleanup();
 
 	return 0;
 }
