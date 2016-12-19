@@ -2,7 +2,6 @@
 
 #define VK_USE_PLATFORM_WIN32_KHR
 
-#include <Windows.h>
 #include <vulkan/vulkan.hpp>
 
 class SimpleVulkan
@@ -19,6 +18,11 @@ private:
 
 	uint32_t							m_gpuCount;
 	std::vector<vk::PhysicalDevice>		m_gpu;
+
+	uint32_t							m_queueFamilyCount;
+	std::vector<vk::QueueFamilyProperties>	m_queueProps;
+	
+	vk::Device							m_device;
 };
 
 

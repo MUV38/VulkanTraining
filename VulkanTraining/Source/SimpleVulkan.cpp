@@ -75,9 +75,51 @@ void SimpleVulkan::Init()
 		res = m_vkInstance.enumeratePhysicalDevices(&m_gpuCount, m_gpu.data());
 		assert(res == vk::Result::eSuccess && m_gpuCount >= 1);
 	}
+
+	// デバイス作成
+	{
+		vk::DeviceQueueCreateInfo queueInfo = {};
+
+		m_gpu[0].getQueueFamilyProperties(&m_queueFamilyCount, nullptr);
+		assert(m_queueFamilyCount >= 1);
+		
+		m_queueProps.resize(m_queueFamilyCount);
+		m_gpu[0].getQueueFamilyProperties(&m_queueFamilyCount, m_queueProps.data());
+		assert(m_queueFamilyCount >= 1);
+
+		// 使用するグラフィックスキューを探す
+		bool found = false;
+		for (int i = 0; i < m_queueFamilyCount; i++) {
+			if (m_queueProps[i].queueFlags & vk::QueueFlagBits::eGraphics) {
+				queueInfo.queueFamilyIndex = i;
+				found = true;
+				break;
+			}
+		}
+		assert(found);
+
+		float queue_priorities[1] = { 0.0 };
+		//queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueInfo.pNext = NULL;
+		queueInfo.queueCount = 1;
+		queueInfo.pQueuePriorities = queue_priorities;
+
+		vk::DeviceCreateInfo deviceInfo = {};
+		deviceInfo.queueCreateInfoCount = 1;
+		deviceInfo.pQueueCreateInfos = &queueInfo;
+		deviceInfo.enabledExtensionCount = 0;
+		deviceInfo.ppEnabledExtensionNames = nullptr;
+		deviceInfo.enabledLayerCount = 0;
+		deviceInfo.ppEnabledLayerNames = nullptr;
+		deviceInfo.pEnabledFeatures = nullptr;
+
+		vk::Result res = m_gpu[0].createDevice(&deviceInfo, nullptr, &m_device);
+		assert(res == vk::Result::eSuccess);
+	}
 }
 
 void SimpleVulkan::Cleanup()
 {
+	m_device.destroy();
 	m_vkInstance.destroy();
 }
