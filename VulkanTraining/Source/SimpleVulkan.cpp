@@ -89,9 +89,10 @@ void SimpleVulkan::Init()
 
 		// 使用するグラフィックスキューを探す
 		bool found = false;
-		for (int i = 0; i < m_queueFamilyCount; i++) {
+		for (uint32_t i = 0; i < m_queueFamilyCount; i++) {
 			if (m_queueProps[i].queueFlags & vk::QueueFlagBits::eGraphics) {
 				queueInfo.queueFamilyIndex = i;
+				m_graphicsQueueFamilyIndex = i;
 				found = true;
 				break;
 			}
@@ -116,10 +117,37 @@ void SimpleVulkan::Init()
 		vk::Result res = m_gpu[0].createDevice(&deviceInfo, nullptr, &m_device);
 		assert(res == vk::Result::eSuccess);
 	}
+
+	// コマンドプール
+	{
+		vk::CommandPoolCreateInfo cmdPoolInfo = {};
+		cmdPoolInfo.pNext = nullptr;
+		cmdPoolInfo.queueFamilyIndex = m_graphicsQueueFamilyIndex;
+		cmdPoolInfo.flags = vk::CommandPoolCreateFlags();
+
+		vk::Result res = m_device.createCommandPool(&cmdPoolInfo, nullptr, &m_commandPool);
+		assert(res == vk::Result::eSuccess);
+	}
+
+	// コマンドバッファ
+	{
+		vk::CommandBufferAllocateInfo cmd = {};
+		cmd.pNext = nullptr;
+		cmd.commandPool = m_commandPool;
+		cmd.level = vk::CommandBufferLevel::ePrimary;
+		cmd.commandBufferCount = 1;
+
+		vk::Result res = m_device.allocateCommandBuffers(&cmd, &m_commandBuffer);
+		assert(res == vk::Result::eSuccess);
+	}
 }
 
 void SimpleVulkan::Cleanup()
 {
+	vk::CommandBuffer cmdBufs[1] = { m_commandBuffer };
+	m_device.freeCommandBuffers(m_commandPool, 1, cmdBufs);
+
+	m_device.destroyCommandPool(m_commandPool);
 	m_device.destroy();
 	m_vkInstance.destroy();
 }

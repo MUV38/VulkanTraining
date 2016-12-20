@@ -22,7 +22,11 @@ private:
 	uint32_t							m_queueFamilyCount;
 	std::vector<vk::QueueFamilyProperties>	m_queueProps;
 	
+	uint32_t							m_graphicsQueueFamilyIndex;
 	vk::Device							m_device;
+
+	vk::CommandPool						m_commandPool;
+	vk::CommandBuffer					m_commandBuffer;
 };
 
 
